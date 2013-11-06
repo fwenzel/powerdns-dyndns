@@ -35,13 +35,20 @@ if(!isset($dbr['id']) || !isset($dbr['password']) ||
   authFail();
 }
 
-$dbh = $db->prepare("update records set content=:content where name=:name");
-//$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$dbh->bindparam(':content', $IP);
+$dbh = $db->prepare("SELECT content FROM records WHERE name=:name");
 $dbh->bindparam(':name', $HOSTNAME);
 $dbh->execute();
+$dbr=$dbh->fetch(PDO::FETCH_LAZY);
 
-updateSerial();
+if ($dbr['content'] !== $IP) {
+    $dbh = $db->prepare("update records set content=:content where name=:name");
+    // $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $dbh->bindparam(':content', $IP);
+    $dbh->bindparam(':name', $HOSTNAME);
+    $dbh->execute();
+
+    updateSerial();
+}
 print("Success.");
 
 // $dbh->debugDumpParams();
