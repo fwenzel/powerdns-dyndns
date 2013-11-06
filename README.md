@@ -1,7 +1,7 @@
 Dynamic DNS service using PowerDNS
 ==================================
 
-These are a number of convenience scripts to run a dynamic DNS service with PowerDNS.
+Convenient scripts to run a dynamic DNS service with PowerDNS.
 
 www/update.php
 --------------
