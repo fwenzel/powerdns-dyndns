@@ -3,8 +3,8 @@ Dynamic DNS service using PowerDNS
 
 These are a number of convenience scripts to run a dynamic DNS service with PowerDNS.
 
-update.php
-----------
+www/update.php
+--------------
 A PHP script you can deploy on your webserver. Routers can hit the script with:
 
 * a GET parameter ``hostname=...`` containing the host name they want to update
