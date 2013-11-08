@@ -19,10 +19,14 @@ if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
     authFail();
 }
 
+// Log to syslog.
+openlog('pdns-update', null, LOG_USER);
+
 try {
     $db = new PDO('sqlite:/var/lib/powerdns/pdns.sqlite3');
 } catch(PDOException $e) {
-    echo $e->getMessage();
+    syslog(LOG_ALERT, 'Database error: ' . $e->getMessage());
+    echo 'DB error!';
     exit(1);
 }
 
@@ -33,6 +37,7 @@ $dbr=$dbh->fetch(PDO::FETCH_LAZY);
 
 if (!isset($dbr['id']) || !isset($dbr['password']) || $dbr['id'] != $USERNAME ||
     crypt($PASSWORD, $dbr['password']) != $dbr['password']) {
+    syslog(LOG_NOTICE, "Auth error by user $USERNAME for $HOSTNAME");
     authFail();
 }
 
@@ -48,7 +53,11 @@ if ($dbr['content'] !== $IP) {
     $dbh->bindparam(':name', $HOSTNAME);
     $dbh->execute();
 
+    syslog(LOG_INFO, "IP update by $USERNAME for $HOSTNAME from {$dbr['content']} to $IP");
+
     updateSerial();
+} else {
+    syslog(LOG_DEBUG, "IP update attempt by $USERNAME for $HOSTNAME. No update necessary.");
 }
 echo 'Success.';
 
@@ -69,12 +78,14 @@ function updateSerial() {
     $row = $dbh->fetch();
 
     if (!isset($row['content'])) {
+        syslog(LOG_CRIT, 'No SOA record!');
         die;
     }
 
     preg_match('/([^\s]+) ([^\s]+) (\d+) (\d+) (\d+) (\d+) (\d+)/', $row['content'], $match);
 
     if (!isset($match[3])) {
+        syslog(LOG_CRIT, "Unexpected SOA record format! [{$row['content']}]");
         die;
     }
     $dbh = $db->prepare("UPDATE records SET content=:content WHERE type='SOA'");
