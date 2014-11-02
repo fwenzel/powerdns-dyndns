@@ -1,13 +1,14 @@
 <?php
 
+if (empty($_REQUEST['hostname'])) {
+    header('HTTP/1.1 400 Bad Request');
+    exit(1);
+}
+
 $IP = $_SERVER['REMOTE_ADDR'];
 $HOSTNAME = $_REQUEST['hostname'];
 $USERNAME = '';
 $PASSWORD = '';
-
-if (!isset($HOSTNAME)) {
-    exit(1);
-}
 
 if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
     $USERNAME = $_SERVER['PHP_AUTH_USER'];
